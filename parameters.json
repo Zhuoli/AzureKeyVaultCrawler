@@ -3,7 +3,7 @@
     "clientid":"XXXXX",
     "clientsecret":"XXXXXX",
     "workspaceid":"XXXXXX",
-    "workspacekey":XXXXXX",
+    "workspacekey":"XXXXXX",
     "logname":"kv_analysis",
     "subscription_ids":[
         "XXXXXX",
