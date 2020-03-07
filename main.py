@@ -264,12 +264,14 @@ def main():
 
         # Deliver data to Azure Monitor API
         json_data = json.dumps(key_vault_records)
-        post_data(
-            customer_id = config['workspaceid'],
-            shared_key = config['workspacekey'],
-            body = json_data,
-            log_type = config['logname']
-        )
+        print("Zhuoli debug")
+        print(json_data)
+        # post_data(
+        #     customer_id = config['workspaceid'],
+        #     shared_key = config['workspacekey'],
+        #     body = json_data,
+        #     log_type = config['logname']
+        # )
     except Exception:
         logging.error('Execution error',exc_info=True)
 
