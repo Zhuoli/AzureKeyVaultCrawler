@@ -8,6 +8,8 @@ def retrieveSingleKeyVaultAttributes(vault_url, resourceName, version, credentia
     secretBundle = client.get_secret(vault_url, resourceName, version)
     return secretBundle.attributes
 
+#def listAllKeyVaultBySubscriptionID():
+    # mgmt.recoveryservices.operations.vaults_operations.VaultsOperations
 def main():
     credentials = ServicePrincipalCredentials(
         client_id = os.getenv('AZURE_CLIENT_ID'),

@@ -9,6 +9,7 @@ verify_ssl = true
 requests = "*"
 azure = "*"
 azure-keyvault = "*"
+msal = "*"
 
 [requires]
 python_version = "3.7"
