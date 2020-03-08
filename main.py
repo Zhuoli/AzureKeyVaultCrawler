@@ -188,6 +188,20 @@ def shrink_table(tableheader, tablebody):
     result.insert(0,headers)
     return result
 
+def load_config():
+    config={}
+    config['tenantname'] = os.getenv('TENANT_NAME')
+    config['clientid'] = os.getenv('AZURE_CLIENT_ID')
+    config['clientsecret'] = os.getenv('AZURE_CLIENT_SECRET')
+    config['workspaceid'] = os.getenv('workspaceid')
+    config['workspacekey'] = os.getenv('workspacekey')
+    config['logname'] = os.getenv('logname')
+    config['subscription_ids'] = (os.getenv('SUBSCRIPTION_IDS') or "").split(',')
+    config['sendgrid_key'] = os.getenv('SENDGRID_KEY')
+    config['emailfrom'] = os.getenv('EMAIL_FROM')
+    config['emailto'] = os.getenv('EMAIL_TO')
+       
+    return config
 def main():
 
     try:
@@ -212,9 +226,14 @@ def main():
         # Create logging mechanism
         create_logger(args.logfile)
 
+        config = None;
         # Retrieve parameters from parameter file
-        with open(args.parameterfile) as json_data:
-            config = json.load(json_data)
+        if (args.parameterfile is None):
+            config = load_config()
+        else:
+            with open(args.parameterfile) as json_data:
+                config = json.load(json_data)
+        
 
         # Retrieve access token for Azure Resource Management API
         logging.info('Requesting acess token for Azure Resource Management API...')
