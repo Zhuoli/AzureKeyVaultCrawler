@@ -11,6 +11,8 @@ import msal
 
 from datetime import datetime, timezone
 from argparse import ArgumentParser
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 # Reusable function to create a logging mechanism
 def create_logger(logfile=None):
@@ -137,6 +139,21 @@ def post_data_to_azure_automation(uri, body):
         logging.info("Accepted")
     else:
         logging.error("Data was not posted to API.  Response code: {}".format(response.status_code))
+
+def post_data_to_email(SENDGRID_API_KEY, body):
+    message = Mail(
+    from_email='zhuoliseattle@gmail.com',
+    to_emails='zhuoliseattle@gmail.com',
+    subject='Sending with Twilio SendGrid is Fun',
+    html_content='<strong>and easy to do anywhere, even with Python</strong>' + body)
+    try:
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+        print(response.status_code)
+        print(response.body)
+        print(response.headers)
+    except Exception as e:
+        print(e.message)
 
 def main():
 
@@ -289,7 +306,8 @@ def main():
         #     body = json_data,
         #     log_type = config['logname']
         # )
-        post_data_to_azure_automation(config['webhookurl'], json_data)
+        # post_data_to_azure_automation(config['webhookurl'], json_data)
+        post_data_to_email(config['sendgrid_key'], json_data)
         # print("Done. Sent to Azure Monitor with name" + config['logname'])
     except Exception:
         logging.error('Execution error',exc_info=True)
