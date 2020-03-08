@@ -13,6 +13,9 @@ from datetime import datetime, timezone
 from argparse import ArgumentParser
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+from tabulate import tabulate
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 # Reusable function to create a logging mechanism
 def create_logger(logfile=None):
@@ -147,11 +150,21 @@ def post_data_to_email(SENDGRID_API_KEY, from_email, to_emails, tablebody):
     logging.info(f"Send email to:  {to_emails}")
     logging.info(f"send email from:  {from_email}")
 
+    html = """
+    <html><body><p>Hello, Friend.</p>
+    <p>Here is your KeyVault report:</p>
+    {table}
+    <p>Regards,</p>
+    <p>Microsoft ARO team</p>
+    </body></html>
+    """
+    html = html.format(table=tabulate(tablebody, headers="firstrow", tablefmt="html"))
+
     message = Mail(
         from_email=from_email,
         to_emails=to_emails,
         subject='ARO KeyVault Monitor Report',
-        html_content='Report:\n' + str(tablebody)
+        html_content=html
     )
     try:
         sg = SendGridAPIClient(SENDGRID_API_KEY)

@@ -11,6 +11,8 @@ azure = "*"
 azure-keyvault = "*"
 msal = "*"
 sendgrid = "*"
+tabulate = "*"
+email = "*"
 
 [requires]
 python_version = "3.7"
