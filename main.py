@@ -140,20 +140,38 @@ def post_data_to_azure_automation(uri, body):
     else:
         logging.error("Data was not posted to API.  Response code: {}".format(response.status_code))
 
-def post_data_to_email(SENDGRID_API_KEY, body):
+#def convertTableToHtmlTable(tablebody):
+    #
+
+def post_data_to_email(SENDGRID_API_KEY, from_email, to_emails, tablebody):
+    logging.info(f"Send email to:  {to_emails}")
+    logging.info(f"send email from:  {from_email}")
+
     message = Mail(
-    from_email='zhuoliseattle@gmail.com',
-    to_emails='zhuoliseattle@gmail.com',
-    subject='Sending with Twilio SendGrid is Fun',
-    html_content='<strong>and easy to do anywhere, even with Python</strong>' + body)
+        from_email=from_email,
+        to_emails=to_emails,
+        subject='ARO KeyVault Monitor Report',
+        html_content='Report:\n' + str(tablebody)
+    )
     try:
         sg = SendGridAPIClient(SENDGRID_API_KEY)
         response = sg.send(message)
-        print(response.status_code)
-        print(response.body)
-        print(response.headers)
+        logging.info(response.status_code)
+        logging.info(response.body)
+        logging.info(response.headers)
     except Exception as e:
-        print(e.message)
+        logging.error(e)
+        logging.error(e.message)
+
+def shrink_table(tableheader, tablebody):
+    headers = tableheader.split(',')
+    result=[headers]
+    for row in tablebody:
+        newrow = []
+        for header in headers:
+            newrow.append(row[header])
+        result.append(newrow)
+    return result
 
 def main():
 
@@ -165,8 +183,7 @@ def main():
 
         # Setup other variables used throughout solution
         data_types = [
-            'secrets',
-            'certificates'
+            'secrets'
         ]
         vault_list = []
         key_vault_records = []
@@ -291,23 +308,18 @@ def main():
                         else:
                             key_vault_record['expires'] = None
 
+                        key_vault_record['name']=key_vault_record['data_id'].split('/')[-1]
                         # Append the record to the list
                         key_vault_records.append(key_vault_record)
 
         # Deliver data to Azure Monitor API
         json_data = json.dumps(key_vault_records)
-        for vault in vault_list:
-            print("Retrieved keyvault: %s" %(vault['key_vault_name']))
-        for keyVaultRecord in key_vault_records:
-            print("%s %s Type: %s Expires: %s" %(keyVaultRecord['key_vault'], keyVaultRecord['data_id'],keyVaultRecord['data_type'],keyVaultRecord['expires'])) 
-        # post_data_to_azure_log(
-        #     customer_id = config['workspaceid'],
-        #     shared_key = config['workspacekey'],
-        #     body = json_data,
-        #     log_type = config['logname']
-        # )
+        tableheaders='key_vault,name,expires'
+        tablebody = shrink_table(tableheaders, key_vault_records)
+        logging.info(f"Crawlled keyvaults: {vault_list}")
+        # post_data_to_azure_log(customer_id = config['workspaceid'],shared_key = config['workspacekey'],body = json_data,log_type = config['logname'])
         # post_data_to_azure_automation(config['webhookurl'], json_data)
-        post_data_to_email(config['sendgrid_key'], json_data)
+        post_data_to_email(config['sendgrid_key'], config['emailfrom'], config['emailto'], tablebody)
         # print("Done. Sent to Azure Monitor with name" + config['logname'])
     except Exception:
         logging.error('Execution error',exc_info=True)
