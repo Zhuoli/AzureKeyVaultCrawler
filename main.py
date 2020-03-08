@@ -178,12 +178,14 @@ def post_data_to_email(SENDGRID_API_KEY, from_email, to_emails, tablebody):
 
 def shrink_table(tableheader, tablebody):
     headers = tableheader.split(',')
-    result=[headers]
+    result=[]
     for row in tablebody:
         newrow = []
         for header in headers:
             newrow.append(row[header])
         result.append(newrow)
+    result.sort(key=lambda x: x[len(headers)-1])
+    result.insert(0,headers)
     return result
 
 def main():
