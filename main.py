@@ -101,7 +101,8 @@ def build_signature(customer_id, shared_key, date, content_length, method, conte
     return authorization
 
 # Function which posts data to Azure Monitor API  
-def post_data(customer_id, shared_key, body, log_type):
+# CustomerID : The unique identifier for the Log Analytics workspace.
+def post_data_to_azure_log(customer_id, shared_key, body, log_type):
     method = 'POST'
     content_type = 'application/json'
     resource = '/api/logs'
@@ -123,6 +124,20 @@ def post_data(customer_id, shared_key, body, log_type):
     else:
         logging.error("Data was not posted to API.  Response code: {}".format(response.status_code))
 
+def post_data_to_azure_automation(uri, body):
+    method = 'POST'
+    content_type = 'application/json'
+    headers = {
+        'content-type': content_type,
+        'message': 'ZhuoliKeyVaultMonitorScript',
+    }
+
+    response = requests.post(uri,data=body, headers=headers)
+    if (response.status_code >= 200 and response.status_code <= 299):
+        logging.info("Accepted")
+    else:
+        logging.error("Data was not posted to API.  Response code: {}".format(response.status_code))
+
 def main():
 
     try:
@@ -133,8 +148,8 @@ def main():
 
         # Setup other variables used throughout solution
         data_types = [
-            'keys',
-            'secrets'
+            'secrets',
+            'certificates'
         ]
         vault_list = []
         key_vault_records = []
@@ -264,14 +279,18 @@ def main():
 
         # Deliver data to Azure Monitor API
         json_data = json.dumps(key_vault_records)
-        print("Zhuoli debug")
-        print(json_data)
-        # post_data(
+        for vault in vault_list:
+            print("Retrieved keyvault: %s" %(vault['key_vault_name']))
+        for keyVaultRecord in key_vault_records:
+            print("%s %s Type: %s Expires: %s" %(keyVaultRecord['key_vault'], keyVaultRecord['data_id'],keyVaultRecord['data_type'],keyVaultRecord['expires'])) 
+        # post_data_to_azure_log(
         #     customer_id = config['workspaceid'],
         #     shared_key = config['workspacekey'],
         #     body = json_data,
         #     log_type = config['logname']
         # )
+        post_data_to_azure_automation(config['webhookurl'], json_data)
+        # print("Done. Sent to Azure Monitor with name" + config['logname'])
     except Exception:
         logging.error('Execution error',exc_info=True)
 
